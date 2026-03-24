@@ -1,0 +1,43 @@
+/dashboard
+│
+├── debug/                       # notebooks and ad hoc debugging
+│
+├── doc/
+│   └── architecture.txt         # high-level project layout
+│
+├── data/
+│   ├── raw_prices.parquet       # raw merged history, keeps crypto weekends
+│   ├── features.parquet         # feature/regime dataset on market-day calendar
+│   └── snapshots/
+│       ├── dashboard_YYYY-MM-DD.txt   # rendered daily dashboard snapshot
+│       └── snapshot_YYYY-MM-DD.json   # structured daily snapshot payload
+│
+├── src/
+│   ├── ingest.py                # incremental Yahoo Finance fetch, up to yesterday
+│   ├── storage.py               # load/save raw parquet using project-root paths
+│   ├── transform.py             # features: 1d, 20d, WTD, MTD, z63, z252
+│   ├── regimes.py               # risk/liquidity regime rules
+│   ├── pipeline.py              # orchestrates ingest -> raw save -> market-day alignment -> features -> regimes
+│   ├── report.py                # plain terminal dashboard
+│   └── report_rich.py           # rich terminal dashboard variant
+│
+├── config.py                    # tickers, return windows, storage paths, start date
+└── run_daily.py                 # daily entry point: run pipeline then print dashboard
+
+Pipeline logic
+1. Load existing raw prices from `data/raw_prices.parquet`.
+2. Fetch incremental prices from Yahoo Finance starting after the latest stored timestamp.
+3. Merge and save the raw dataset with absolute project-root-based paths.
+4. Build a feature input dataset on market days only, using available macro columns such as `^GSPC`, `^TNX`, `^VIX`.
+5. Compute features on that aligned calendar:
+   - trailing returns: `1d`, `20d`
+   - calendar returns: `WTD`, `MTD`
+   - rolling z-scores: `z63`, `z252`
+6. Compute regimes:
+   - risk regime from `^GSPC_ret_20d` and `^VIX_z63`
+   - liquidity regime only if the required DXY/TNX columns are present
+7. Save the final feature/regime dataset to `data/features.parquet`.
+
+Calendar convention
+- Raw prices keep the original Yahoo Finance calendar, including weekend crypto observations.
+- Features and regimes are computed on a market-day-only index to avoid weekend NaNs distorting returns and rolling statistics for indices.
