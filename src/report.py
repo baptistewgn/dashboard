@@ -1,4 +1,5 @@
 import pandas as pd
+from config import tickers
 
 def print_dashboard(df):
     last = df.iloc[-1]
@@ -25,25 +26,35 @@ def print_dashboard(df):
     print("-" * 50)
 
     sections = {
-        "MACRO": ["^GSPC", "^TNX", "^VIX"],
-        "FX": ["DX-Y.NYB"],
-        "CRYPTO": ["BTC-USD", "ETH-USD"],
-        "COMMODITIES": ["GC=F", "CL=F"],
+        "MACRO": ["US2Y", "US5Y", "US10Y", "US30Y", "MOVE"],
+        "INDICES": ["STOXX", "SPX", "VIX"],
+        "FX": ["DXY", "EURUSD"],
+        "COMMODITIES": ["GOLD", "WTI"],
+        "CRYPTO": ["BTC", "ETH", "SOL"],
     }
+
+    def resolve_column(asset_name):
+        exact_ticker = tickers.get(asset_name, asset_name)
+        if exact_ticker in last.index:
+            return exact_ticker
+        if asset_name in last.index:
+            return asset_name
+        return exact_ticker
 
     for section, assets in sections.items():
         print(f"\n[{section}]")
         print("ASSET         LAST     1D%    WTD%    MTD%     Z63")
         print("-" * 50)
 
-        for asset in assets:
+        for asset_name in assets:
+            asset_col = resolve_column(asset_name)
             print(
-                f"{asset:<8} "
-                f"{fmt_num(last[asset], 9)} "
-                f"{fmt_pct(last[f'{asset}_ret_1d'], 7)} "
-                f"{fmt_pct(last[f'{asset}_ret_wtd'], 7)} "
-                f"{fmt_pct(last[f'{asset}_ret_mtd'], 7)} "
-                f"{fmt_num(last[f'{asset}_z63'], 7)}"
+                f"{asset_name:<8} "
+                f"{fmt_num(last[asset_col], 9)} "
+                f"{fmt_pct(last[f'{asset_col}_ret_1d'], 7)} "
+                f"{fmt_pct(last[f'{asset_col}_ret_wtd'], 7)} "
+                f"{fmt_pct(last[f'{asset_col}_ret_mtd'], 7)} "
+                f"{fmt_num(last[f'{asset_col}_z63'], 7)}"
             )
     
     print()

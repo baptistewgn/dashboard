@@ -2,18 +2,29 @@
 
 tickers = {
     # macro
-    "SPX": "^GSPC",
-    "DXY": "DX-Y.NYB",
+    "US2Y": "^IRX",
+    "US5Y": "^FVX",
     "US10Y": "^TNX",
+    "US30Y": "^TYX",
+    "MOVE": "^MOVE",
+
+    #indices
+    "STOXX": "^STOXX50E",
+    "SPX": "^GSPC",
     "VIX": "^VIX",
 
-    # crypto
-    "BTC": "BTC-USD",
-    "ETH": "ETH-USD",
+    #fx
+    "DXY": "DX-Y.NYB",
+    "EURUSD": "EURUSD=X",
 
     # commodities
     "GOLD": "GC=F",
     "WTI": "CL=F",
+
+    # crypto
+    "BTC": "BTC-USD",
+    "ETH": "ETH-USD",
+    "SOL": "SOL-USD",
 }
 
 
