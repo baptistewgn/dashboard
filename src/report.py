@@ -1,5 +1,8 @@
 import pandas as pd
+from pathlib import Path
 from config import tickers
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 def print_dashboard(df):
     last = df.iloc[-1]
@@ -59,26 +62,23 @@ def print_dashboard(df):
     
     print()
 
-def save_snapshot_json(df, path="data/snapshots/"):
-    import os
-
-    os.makedirs(path, exist_ok=True)
-
+def save_snapshot_json(df, path="data/snapshots"):
+    save_path = PROJECT_ROOT / Path(path)
+    save_path.mkdir(parents=True, exist_ok=True)
     ts = df.index[-1].strftime("%Y-%m-%d")
-    file = f"{path}/snapshot_{ts}.json"
+    file = save_path / f"snapshot_{ts}.json"
 
     df.iloc[-1].to_json(file)
 
     print(f"Saved JSON: {file}")
 
-def save_snapshot_txt(df, path="data/snapshots/"):
-    import os
+def save_snapshot_txt(df, path="data/snapshots"):
     import sys
 
-    os.makedirs(path, exist_ok=True)
-
+    save_path = PROJECT_ROOT / Path(path)
+    save_path.mkdir(parents=True, exist_ok=True)
     ts = df.index[-1].strftime("%Y-%m-%d")
-    file = f"{path}/snapshot_{ts}.txt"
+    file = save_path / f"snapshot_{ts}.txt"
 
     with open(file, "w") as f:
         old_stdout = sys.stdout
