@@ -62,7 +62,7 @@ def print_dashboard(df):
     
     print()
 
-def save_snapshot_json(df, path="data/snapshots"):
+def save_snapshot_json(df, path="data/snapshots/json"):
     save_path = PROJECT_ROOT / Path(path)
     save_path.mkdir(parents=True, exist_ok=True)
     ts = df.index[-1].strftime("%Y-%m-%d")
@@ -72,7 +72,7 @@ def save_snapshot_json(df, path="data/snapshots"):
 
     print(f"Saved JSON: {file}")
 
-def save_snapshot_txt(df, path="data/snapshots"):
+def save_snapshot_txt(df, path="data/snapshots/txt"):
     import sys
 
     save_path = PROJECT_ROOT / Path(path)
