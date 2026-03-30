@@ -8,19 +8,17 @@ def compute_features(df):
     rets = []
     
     for w, name in return_windows.items():
-        r = df.pct_change(w).add_suffix(f"_ret_{name}")
+        r = df.pct_change(w, fill_method=None).add_suffix(f"_ret_{name}")
         rets.append(r)
 
-    # week-to-date return anchored to the previous Friday close
-    weekly_close = df.resample("W-FRI").last()
-    prev_week_close = weekly_close.shift(1).reindex(df.index, method="ffill")
-    wtd = df.div(prev_week_close).sub(1)
+    # Anchor each trading week to the prior close before the week's first row.
+    week_base = df.shift(1).groupby(df.index.to_period("W-SUN")).transform("first")
+    wtd = df.div(week_base).sub(1)
     wtd.columns = [f"{c}_ret_wtd" for c in df.columns]
 
-    # month-to-date return anchored to the previous month-end close
-    monthly_close = df.resample("M").last()
-    prev_month_close = monthly_close.shift(1).reindex(df.index, method="ffill")
-    mtd = df.div(prev_month_close).sub(1)
+    # Anchor each trading month to the prior close before the month's first row.
+    month_base = df.shift(1).groupby(df.index.to_period("M")).transform("first")
+    mtd = df.div(month_base).sub(1)
     mtd.columns = [f"{c}_ret_mtd" for c in df.columns]
     
     out = pd.concat([out] + rets + [wtd, mtd], axis=1)
