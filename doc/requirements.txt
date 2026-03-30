@@ -1,3 +1,4 @@
-ZRFWPDW56WNJ1OBU
-
+fastparquet>=2024.0
+pandas>=2.0
+rich>=13.0
 yfinance==0.2.54
