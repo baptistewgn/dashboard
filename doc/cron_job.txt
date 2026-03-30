@@ -1,0 +1,22 @@
+crontab -e   # edit cron jobs
+crontab -l   # list cron jobs
+crontab -r   # remove all cron jobs
+
+:wq
+:q # not to save
+
+
+* * * * * command_to_run
+- - - - -
+| | | | |
+| | | | day of week (0-7, Sunday usually 0 or 7)
+| | | month (1-12)
+| | day of month (1-31)
+| hour (0-23)
+minute (0-59)
+
+daily at 23:01
+1 23 * * * command
+
+Weekdays only
+1 23 * * 1-5 command
