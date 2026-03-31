@@ -7,11 +7,11 @@ It pulls price data, builds rolling features and regime labels, prints a termina
 ## What It Does
 
 - Fetches market data incrementally with `yfinance`
-- Stores raw prices in `data/raw_prices.parquet`
+- Stores raw prices in a `.parquet` file
 - Builds features such as 1d, 20d, WTD, MTD, `z63`, and `z252`
 - Computes simple risk and liquidity regimes
 - Prints a daily dashboard in the terminal
-- Saves daily snapshots to `data/snapshots/`
+- Genrate daily snapshots to `data/snapshots/`
 
 ## Project Structure
 
@@ -20,7 +20,6 @@ It pulls price data, builds rolling features and regime labels, prints a termina
 - `src/ingest.py` - data fetch logic
 - `src/pipeline.py` - end-to-end pipeline
 - `src/report.py` - terminal dashboard and snapshot export
-- `data/` - local parquet files and snapshots
 - `doc/` - specification and architecture notes
 
 ## Requirements
@@ -46,8 +45,8 @@ After a run, the project updates:
 
 - `data/raw_prices.parquet`
 - `data/features.parquet`
-- `data/snapshots/snapshot_YYYY-MM-DD.json`
-- `data/snapshots/snapshot_YYYY-MM-DD.txt`
+- `data/snapshots/json/snapshot_YYYY-MM-DD.json`
+- `data/snapshots/txt/snapshot_YYYY-MM-DD.txt`
 
 ## Notes
 
