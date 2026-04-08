@@ -1,11 +1,57 @@
 import pandas as pd
 from pathlib import Path
+from datetime import datetime
+from zoneinfo import ZoneInfo
 from config import tickers
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
+RUN_TZ = ZoneInfo("Europe/Luxembourg")
 
-def print_dashboard(df):
+
+def get_run_timestamp():
+    return datetime.now(RUN_TZ)
+
+
+def _normalize_display_timestamp(ts):
+    if ts is None:
+        return None
+    out = pd.Timestamp(ts)
+    if out.tzinfo is None:
+        return out
+    return out.tz_convert(RUN_TZ)
+
+
+def _describe_staleness(data_ts, run_ts):
+    if data_ts is None:
+        return "unknown"
+
+    data_day = _normalize_display_timestamp(data_ts).date()
+    run_day = run_ts.date()
+    delta_days = (run_day - data_day).days
+
+    if delta_days <= 0:
+        return "current"
+    if delta_days == 1:
+        return "1 day old"
+    return f"{delta_days} days old"
+
+
+def print_dashboard(df, run_ts=None):
+    run_ts = run_ts or get_run_timestamp()
+
+    if df.empty:
+        print()
+        print("=" * 50)
+        print("DASHBOARD".ljust(31) + run_ts.strftime("%Y-%m-%d %H:%M:%S %Z"))
+        print("=" * 50)
+        print("DATA STATUS: empty dataframe")
+        print("FETCH STATUS: no market data available for this run")
+        print()
+        return
+
     last = df.iloc[-1]
+    data_ts = _normalize_display_timestamp(df.index[-1])
+    stale_label = _describe_staleness(data_ts, run_ts)
 
     def fmt_num(x, width=8, decimals=2):
         if pd.isna(x):
@@ -19,8 +65,10 @@ def print_dashboard(df):
 
     print()
     print("=" * 50)
-    print("DASHBOARD".ljust(31) + f"{df.index[-1]}")
+    print("DASHBOARD".ljust(31) + run_ts.strftime("%Y-%m-%d %H:%M:%S %Z"))
     print("=" * 50)
+    print(f"DATA AS OF: {data_ts}")
+    print(f"DATA STALENESS: {stale_label}")
 
     print(
         f"RISK: {last['risk_regime']:<10}"
@@ -62,29 +110,41 @@ def print_dashboard(df):
     
     print()
 
-def save_snapshot_json(df, path="data/snapshots/json"):
+def save_snapshot_json(df, run_ts=None, path="data/snapshots/json"):
+    run_ts = run_ts or get_run_timestamp()
+
+    if df.empty:
+        raise ValueError("Cannot save JSON snapshot for an empty dataframe")
+
     save_path = PROJECT_ROOT / Path(path)
     save_path.mkdir(parents=True, exist_ok=True)
-    ts = df.index[-1].strftime("%Y-%m-%d")
-    file = save_path / f"snapshot_{ts}.json"
+    ts = run_ts.strftime("%Y-%m-%d")
+    data_ts = _normalize_display_timestamp(df.index[-1]).strftime("%Y-%m-%d")
+    file = save_path / f"snapshot_run_{ts}_data_{data_ts}.json"
 
     df.iloc[-1].to_json(file)
 
     print(f"Saved JSON: {file}")
 
-def save_snapshot_txt(df, path="data/snapshots/txt"):
+def save_snapshot_txt(df, run_ts=None, path="data/snapshots/txt"):
     import sys
+
+    run_ts = run_ts or get_run_timestamp()
+
+    if df.empty:
+        raise ValueError("Cannot save TXT snapshot for an empty dataframe")
 
     save_path = PROJECT_ROOT / Path(path)
     save_path.mkdir(parents=True, exist_ok=True)
-    ts = df.index[-1].strftime("%Y-%m-%d")
-    file = save_path / f"snapshot_{ts}.txt"
+    ts = run_ts.strftime("%Y-%m-%d")
+    data_ts = _normalize_display_timestamp(df.index[-1]).strftime("%Y-%m-%d")
+    file = save_path / f"snapshot_run_{ts}_data_{data_ts}.txt"
 
     with open(file, "w") as f:
         old_stdout = sys.stdout
         sys.stdout = f
 
-        print_dashboard(df)
+        print_dashboard(df, run_ts=run_ts)
 
         sys.stdout = old_stdout
 

@@ -1,11 +1,21 @@
 from src.pipeline import run_pipeline
-from src.report import print_dashboard, save_snapshot_json, save_snapshot_txt      #from src.report_rich import print_dashboard
+from src.report import (
+    get_run_timestamp,
+    print_dashboard,
+    save_snapshot_json,
+    save_snapshot_txt,
+)      #from src.report_rich import print_dashboard
 import sys
 import os
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
+run_ts = get_run_timestamp()
 df = run_pipeline()
-print_dashboard(df)
-save_snapshot_json(df)
-save_snapshot_txt(df)
+print_dashboard(df, run_ts=run_ts)
+
+if df.empty:
+    raise SystemExit("run_daily.py: empty dataframe after pipeline; snapshots not written")
+
+save_snapshot_json(df, run_ts=run_ts)
+save_snapshot_txt(df, run_ts=run_ts)
