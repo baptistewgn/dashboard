@@ -3,6 +3,7 @@ from pathlib import Path
 from datetime import datetime
 from zoneinfo import ZoneInfo
 from config import tickers
+from src.time_utils import ensure_utc_timestamp
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 RUN_TZ = ZoneInfo("Europe/Luxembourg")
@@ -15,10 +16,7 @@ def get_run_timestamp():
 def _normalize_display_timestamp(ts):
     if ts is None:
         return None
-    out = pd.Timestamp(ts)
-    if out.tzinfo is None:
-        return out
-    return out.tz_convert(RUN_TZ)
+    return ensure_utc_timestamp(ts).tz_convert(RUN_TZ)
 
 
 def _describe_staleness(data_ts, run_ts):
